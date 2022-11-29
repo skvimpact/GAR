@@ -1,0 +1,31 @@
+<Project Sdk="Microsoft.NET.Sdk.Worker">
+
+  <PropertyGroup>
+    <TargetFramework>net6.0</TargetFramework>
+    <UserSecretsId>dotnet-DownloadGarService-9D4BFFBE-BE06-4490-AE8B-8AF1466778FD</UserSecretsId>
+    <!--<ImplicitUsings>enable</ImplicitUsings>-->
+  </PropertyGroup>
+
+  <!--<PropertyGroup Condition=" '$(RunConfiguration)' == 'DownloadGarService' " />-->
+  <PropertyGroup Condition=" '$(RunConfiguration)' == 'DownloadGarService' ">
+    <ExternalConsole>true</ExternalConsole>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="6.0.10">
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.10" />
+
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="6.0.0" />
+    <PackageReference Include="Quartz.Extensions.Hosting" Version="3.2.3" />
+
+
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\DataLayer\DataLayer.csproj" />
+    <ProjectReference Include="..\ServiceLayer\ServiceLayer.csproj" />
+    <ProjectReference Include="..\FlowControl\FlowControl.csproj" />
+    <ProjectReference Include="..\GarPublicClient\GarPublicClient.csproj" />
+  </ItemGroup>
+</Project>

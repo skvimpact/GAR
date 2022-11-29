@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "GarRelevanceObserver": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}

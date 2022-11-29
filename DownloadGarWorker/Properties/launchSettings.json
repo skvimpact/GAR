@@ -1,0 +1,10 @@
+{
+  "profiles": {
+    "DownloadGarWorker": {
+      "commandName": "Project",
+      "environmentVariables": {
+        "DOTNET_ENVIRONMENT": "Development"
+      }
+    }
+  }
+}
