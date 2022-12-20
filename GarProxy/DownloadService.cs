@@ -54,8 +54,8 @@ namespace GarProxy
                             var result = await Retry.DoWithRetryAsync<bool>(
                             async () => await client.PutDownloadedFile(fileName, file.Item2),
                             TimeSpan.FromSeconds(5),
-                            (attempt) => _logger.LogInformation($"Attempt of PutDownloadedFile to Puller. Left {attempt} attempt(s)"));
-                            _logger.LogInformation($"Send OK to Puller {fileName} correlationId = {file.Item2} Answer exists = {result}");
+                            (attempt) => _logger.LogInformation($"Attempt of POST PutDownloadedFile. Left {attempt} attempt(s)"));
+                            _logger.LogInformation($"POST PutDownloadedFile OK {fileName} correlationId = {file.Item2}");
                             _queue.Archive();
                         } catch (Exception ex) {
                             _logger.LogError($"I cant' send OK to Puller {fileName} correlationId = {file.Item2}");
