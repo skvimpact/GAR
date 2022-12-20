@@ -100,14 +100,15 @@ namespace GarPuller
                         }
                     }
 
-                    if ((fileToHandle = fileService.GarFileToHandle) is null)
+                    if ((fileToHandle = fileService.GarFileToHandle) is null) {
                         _goQueue.Dismiss();
+                    }
 
                     if (await IsHangedDownloadingState()) {
-                       _logger.LogInformation($"Potential HangedDownloadState detected {await _directoryService.Size()}");
+                       _logger.LogError($"Potential HangedDownloadState detected {await _directoryService.Size()}");
                         try {
                             if (await fileService.ResetHangedDownloadState() is not null)
-                                _logger.LogInformation($"Yeah! HangedDownloadState's realy happened");
+                                _logger.LogError($"Yeah! HangedDownloadState's realy happened");
                         } catch (Exception ex) {
                             _logger.LogError($"ResetHangedDownloadState failed. {ex.Message}");
                         }

@@ -82,7 +82,9 @@ namespace GarPuller.ServiceLayer
             if (file.DownloadRequestedAt is null)
                 return null;
             if (file.DownloadedAt is not null)
-                return null;
+                return null;                
+            if (DateTime.Now - file.DownloadRequestedAt < TimeSpan.FromMinutes(5))
+                return null; 
 
             return await UpdateWhenDownloadHanged(file.CorrelationId);
         }     

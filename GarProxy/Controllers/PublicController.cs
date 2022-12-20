@@ -35,7 +35,7 @@ namespace GarProxy.Controllers
             [FromBody]DownloadFileCmd cmd,
             [FromServices]DownloadServiceQueue queue)
         {
-            _logger.LogInformation($"Request to DownloadFile {cmd.DownloadFileURL} correlationId = {correlationId}");
+            _logger.LogInformation($"POST DownloadFiasFile {cmd.DownloadFileURL} correlationId = {correlationId}");
             await queue.Enqueue((cmd.DownloadFileURL, correlationId));
             return Ok();            
         }       
