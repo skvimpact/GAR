@@ -30,16 +30,38 @@ namespace FlowControl
             _context.SaveChanges();
         }        
         public IQueryable<GarFile> GarFiles => _context.GarFiles;
-
-
-        public async Task<GarFile> UpdateWhenDownloadRequested(Guid correlationId)
-        {
+        public async Task<GarFile> UpdateFile(Guid correlationId, UpdateMode mode, string value = "") {
             var file = Get(correlationId);
             if (file == null)
                 throw new ArgumentException(
                     "file not found");
-            // Console.WriteLine($"A file.RequestedAt = {correlationId}");       
+            switch(mode) {
+                case UpdateMode.SetDownloadRequestedAt:     file.DownloadRequestedAt = DateTime.Now; break;
+                case UpdateMode.ResetDownloadRequestedAt:   file.DownloadRequestedAt = null; break;
+                case UpdateMode.SetDownloadedAt:            file.DownloadedAt = DateTime.Now; file.LocalPath = value; break;
+                case UpdateMode.SetProcessRequestedAt:      file.ProcessRequestedAt = DateTime.Now; break;
+                case UpdateMode.ResetProcessRequestedAt:    file.ProcessRequestedAt = null; break;
+                case UpdateMode.SetProcessedAt:             file.ProcessedAt = DateTime.Now; break;
+            }
+            await _context.SaveChangesAsync();
+            return file; 
+        }
+
+/*         public async Task<GarFile> UpdateWhenDownloadRequested(Guid correlationId) {
+            var file = Get(correlationId);
+            if (file == null)
+                throw new ArgumentException(
+                    "file not found");
             file.DownloadRequestedAt = DateTime.Now;
+            await _context.SaveChangesAsync();
+            return file; 
+        }
+        public async Task<GarFile> UpdateWhenDownloadHanged(Guid correlationId) {
+            var file = Get(correlationId);
+            if (file == null)
+                throw new ArgumentException(
+                    "file not found");
+            file.DownloadRequestedAt = null;
             await _context.SaveChangesAsync();
             return file; 
         }
@@ -76,7 +98,7 @@ namespace FlowControl
             file.ProcessedAt = DateTime.Now;
             await _context.SaveChangesAsync();
             return file; 
-        }        
+        }         */
         public async Task ClearControlTable()
         {
             await _context.Database.ExecuteSqlRawAsync("TRUNCATE TABLE [flow].[GarFiles]");

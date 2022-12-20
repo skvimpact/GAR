@@ -7,6 +7,7 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using GarPullerClient;
+using GarServices;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -16,6 +17,7 @@ namespace GarProxy
 {
     public class DownloadService : BackgroundService
     {
+        private const int MAX_PULLER_CALL_ATTEMPT = 3;
         private readonly IServiceProvider _provider;
         private readonly IConfiguration _configuration;
         private readonly DownloadServiceQueue _queue;
@@ -35,21 +37,34 @@ namespace GarProxy
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
             while (!stoppingToken.IsCancellationRequested)
-            {
-                
+            {             
                 var client = _provider.GetRequiredService<PullerClient>();
                 var file = _queue.Dequeue();
                 if (!string.IsNullOrEmpty(file.Item1))
                 {
                     var fileName = $"{_configuration["Folder"]}{ExtractDate(file.Item1)}_{GetLast(file.Item1)}";
-                    DownloadFile(new Uri($"{file.Item1}"), fileName);
-                    if (await client.PutDownloadedFile(fileName, file.Item2))
-                    {
-                        _logger.LogInformation($"Send OK to Puller {fileName} correlationId = {file.Item2}");
-                        _queue.Archive();
+                    
+                    try {
+                        _logger.LogInformation($"Try to download {file.Item1}");
+                        Retry.DoWithRetry(
+                            () => DownloadFile(new Uri($"{file.Item1}"), fileName),
+                            TimeSpan.FromSeconds(10),
+                            (attempt) => _logger.LogInformation($"Attempt to Download. Left {attempt} attempt(s)"));
+                        try {
+                            var result = await Retry.DoWithRetryAsync<bool>(
+                            async () => await client.PutDownloadedFile(fileName, file.Item2),
+                            TimeSpan.FromSeconds(5),
+                            (attempt) => _logger.LogInformation($"Attempt of PutDownloadedFile to Puller. Left {attempt} attempt(s)"));
+                            _logger.LogInformation($"Send OK to Puller {fileName} correlationId = {file.Item2} Answer exists = {result}");
+                            _queue.Archive();
+                        } catch (Exception ex) {
+                            _logger.LogError($"I cant' send OK to Puller {fileName} correlationId = {file.Item2}");
+                            _logger.LogError(ex.Message);
+                        }
+                    } catch (Exception ex) {
+                        _logger.LogError(ex.Message);
                     }
-                }
-                
+                }                
                 await Task.Delay(_refreshInterval, stoppingToken);
             }
         } 
@@ -85,9 +100,6 @@ namespace GarProxy
             new Regex(@"\d{4}\.\d{1,2}.\d{1,2}")
                 .Match(url).Value;
 		static string GetLast(string url) =>		
-			new Uri(url).Segments.Last();
-
-		
-		  
+			new Uri(url).Segments.Last();		  
     }   
 }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using GarPullerClient;
+using GarServices;
 using Microsoft.Extensions.Logging;
 using Quartz;
 
@@ -20,16 +21,14 @@ namespace GarRelevanceObserver
 			_client = client;
 		}       
 		public  Task Execute(IJobExecutionContext context)
-		{   	
-			_logger.LogInformation($"{DateTime.Now} - Executor");          
-            
-			var result = _client.DownloadFile().Result;
-			if (result)
-				_logger.LogInformation($"{DateTime.Now} - GarFile downloaded!");
-			result = _client.ProcessFile().Result;
-			if (result)
-				_logger.LogInformation($"{DateTime.Now} - GarFile processed!");       
-                         
+		{   				
+            try {
+				ServiceState result = _client.Go().Result;
+				_logger.LogInformation($"{DateTime.Now} {result} - GarPuller.Go");
+
+			} catch (Exception ex) {
+				_logger.LogError($"{DateTime.Now} - GarPuller.Go failed {ex.Message}");
+			}                       
         	return Task.CompletedTask;			
 		}        
     }

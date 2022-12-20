@@ -12,6 +12,10 @@ namespace GarPublicClient
         public string Kladr47ZUrl { get; set; } = string.Empty;
         public string GarXMLFullURL { get; set; } = string.Empty;
         public string GarXMLDeltaURL { get; set; } = string.Empty;
-        public string Date { get; set; } = string.Empty;                                                       
+        public string Date { get; set; } = string.Empty;
+        public override string ToString()
+        {
+            return $"{Date}-{GarXMLFullURL}-{GarXMLDeltaURL}";
+        }
     }
 }

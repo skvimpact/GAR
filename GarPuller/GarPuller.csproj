@@ -12,6 +12,7 @@
       <PrivateAssets>all</PrivateAssets>
     </PackageReference>
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.10" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="7.0.0" />    
   </ItemGroup>
 
   <ItemGroup>
@@ -19,5 +20,6 @@
     <ProjectReference Include="..\GarPublicClient\GarPublicClient.csproj" />
     <ProjectReference Include="..\ServiceLayer\ServiceLayer.csproj" />
     <ProjectReference Include="..\DataLayer\DataLayer.csproj" />
+    <ProjectReference Include="..\GarServices\GarServices.csproj" />
   </ItemGroup>
 </Project>

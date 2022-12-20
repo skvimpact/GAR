@@ -7,6 +7,7 @@ namespace DataLayer.EfCode
 	public class DeltaContext : DbContext
 	{
 		public DbSet<AddrObj>	AddrObjs	=> Set<AddrObj>();
+		public DbSet<AddrObjType>	AddrObjTypes	=> Set<AddrObjType>();
 		public DbSet<AdmHierarchy>	AdmHierarchy	=> Set<AdmHierarchy>();
 		public DbSet<House>			Houses			=> Set<House>();
 		public DbSet<HouseType>		HouseTypes		=> Set<HouseType>();

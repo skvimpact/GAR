@@ -14,5 +14,6 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GarPullerClient\GarPullerClient.csproj" />
+    <ProjectReference Include="..\GarServices\GarServices.csproj" />
   </ItemGroup>
 </Project>

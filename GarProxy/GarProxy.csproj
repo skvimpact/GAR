@@ -8,11 +8,13 @@
 
   <ItemGroup>
     <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
+    <PackageReference Include="Microsoft.Extensions.Hosting.WindowsServices" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\GarPublicClient\GarPublicClient.csproj" />
     <ProjectReference Include="..\GarPullerClient\GarPullerClient.csproj" />
+    <ProjectReference Include="..\GarServices\GarServices.csproj" />
   </ItemGroup>
 
 </Project>

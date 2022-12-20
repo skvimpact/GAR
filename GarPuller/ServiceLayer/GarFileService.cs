@@ -4,6 +4,8 @@ using System.Linq;
 using System.Threading.Tasks;
 using FlowControl;
 using GarPublicClient;
+using GarServices;
+using Microsoft.Extensions.Logging;
 using ServiceLayer;
 
 namespace GarPuller.ServiceLayer
@@ -12,6 +14,7 @@ namespace GarPuller.ServiceLayer
     {
         private readonly FlowDbAccess _access;
         private readonly PublicClient _publicClient;
+        private readonly ILogger<GarFileService> _logger;
         private readonly DownloadService _downloadService;
         public DateTime LastProcessedDate =>
             _access.GarFiles
@@ -22,75 +25,80 @@ namespace GarPuller.ServiceLayer
             _access.GarFiles
                 .Where(f => f.Date > LastProcessedDate) 
                 .OrderBy(f => f.Date)
-                .FirstOrDefault();   
-        //public GarFile? GarFileToProcess =>
-        //    _access.GarFiles
-        //        .Where(f => f.Date > LastProcessedDate 
-        //            && f.DownloadedAt != null)
-        //        .OrderBy(f => f.Date)
-        //        .FirstOrDefault();                  
-        public GarFileService(FlowDbAccess access, PublicClient publicClient, DownloadService downloadService)
+                .FirstOrDefault();    
+
+        public GarFile? GarFileToDownload {
+            get {
+                var file = GarFileToHandle;
+                if (file is null)
+                    return null;
+                if (file.DownloadRequestedAt is not null) 
+                    return null;                  
+                return file;
+            }
+        }
+        public GarFileService(FlowDbAccess access, PublicClient publicClient, DownloadService downloadService, ILogger<GarFileService> logger)
         {
             _access = access;
             _publicClient = publicClient;
             _downloadService = downloadService;
+            _logger = logger;
         }
-
         public IEnumerable<GarFile> List() =>
             _access.GarFiles;
         public  bool UpdateList()
         {
-			var existingDates = _access.GarFiles
-				.Select(f => f.Date).
-                ToArray();
-                //var f = await _client.GetAllDownloadFileInfo();
-			var serverGarFileList = _publicClient.GetAllDownloadFileInfo().Result?
-				.Where(f => !string.IsNullOrEmpty(f.GarXMLDeltaURL))?
-				.AsQueryable();
-			var newGarFiles = serverGarFileList?				
-				.MapDownloadFileInfoToGarFile()
-				.Where(f => !existingDates.Contains(f.Date))?
-                .ToArray();
-            if (newGarFiles != null)
-		        _access.AddRange(newGarFiles);
-
-            return true;
+                var existingDates = _access.GarFiles
+                    .Select(f => f.Date).
+                    ToArray();
+                var serverGarFileList = _publicClient.GetAllDownloadFileInfo().Result?
+                    .Where(f => !string.IsNullOrEmpty(f.GarXMLDeltaURL))?
+                    .AsQueryable();
+                var newGarFiles = serverGarFileList?				
+                    .MapDownloadFileInfoToGarFile()
+                    .Where(f => !existingDates.Contains(f.Date))?
+                    .ToArray();
+                if (newGarFiles != null)
+                    _access.AddRange(newGarFiles);
+                return true;
         }
+         public async Task<GarFile> UpdateWhenDownloadRequested(Guid correlationId) 
+            => await _access.UpdateFile(correlationId, UpdateMode.SetDownloadRequestedAt);
+        public async Task<GarFile> UpdateWhenDownloadHanged(Guid correlationId)
+            => await _access.UpdateFile(correlationId, UpdateMode.ResetDownloadRequestedAt);
+        public async Task <GarFile> UpdateWhenDownloaded(Guid correlationId, string path)
+            => await _access.UpdateFile(correlationId, UpdateMode.SetDownloadedAt, path);
+        public async Task<GarFile> UpdateWhenProcessRequested(Guid correlationId)
+            => await _access.UpdateFile(correlationId, UpdateMode.SetProcessRequestedAt);
+        public async Task<GarFile> UpdateWhenProcessHanged(Guid correlationId)
+            => await _access.UpdateFile(correlationId, UpdateMode.ResetProcessRequestedAt);            
+        public async Task<GarFile> UpdateWhenProcessed(Guid correlationId)
+            => await _access.UpdateFile(correlationId, UpdateMode.SetProcessedAt);
 
-        public async Task<bool> DownloadFile()
-        {
-            bool result = false;
+        public async Task<GarFile?> ResetHangedDownloadState() {
             var file = GarFileToHandle;
-            if (file != null && file.DownloadRequestedAt == null && file.DownloadedAt == null)
-            {
-                result = await _publicClient.DownloadFiasFile(file.DeltaUrl, file.CorrelationId);
-                if (result)
-                    await _access.UpdateWhenDownloadRequested(file.CorrelationId);
-            }
-            return result;
-        }
+            if (file is null)    
+                return null;
+            if (file.DownloadRequestedAt is null)
+                return null;
+            if (file.DownloadedAt is not null)
+                return null;
 
-        public async Task<bool> ProcessFile()
-        {
+            return await UpdateWhenDownloadHanged(file.CorrelationId);
+        }     
+        public async Task<GarFile?> ResetHangedProcessState() {
             var file = GarFileToHandle;
-            if (file != null && file.DownloadedAt != null && file.ProcessRequestedAt == null)
-            {
-                await _access.UpdateWhenProcessRequested(file.CorrelationId);
-                _downloadService.HandleZipFile(file.LocalPath);
-                await _access.UpdateWhenProcessed(file.CorrelationId);
-            }
-            return true;
-        }   
+            if (file is null)    
+                return null;
+            if (file.DownloadedAt is null)
+                return null;
+
+            return await UpdateWhenProcessHanged(file.CorrelationId);
+        }            
         public async Task<bool> ClearControlTable()
         {
             await _access.ClearControlTable();
             return true;
-        }     
-        public async Task<GarFile> PutDownloadedFile(
-            Guid correlationId, 
-            string filePath)
-        {            
-            return await _access.UpdateWhenDownloaded(correlationId, filePath);
-        }        
+        }         
     }
 }

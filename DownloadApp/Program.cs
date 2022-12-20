@@ -43,7 +43,7 @@ IHost host = Host.CreateDefaultBuilder(args)
 		});  
 
         services.AddSingleton(new PublicClient(hostContext.Configuration["Gar:GarConnection"]));     
-    })
+    }).UseWindowsService()
     .Build();
 
 //await host.RunAsync();

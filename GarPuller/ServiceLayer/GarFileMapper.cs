@@ -7,6 +7,13 @@ using GarPublicClient;
 
 namespace GarPuller.ServiceLayer
 {
+/*     public class MyKey : IEquatable<MyKey>
+    {
+        public bool Equals(MyKey? other)
+        {
+            throw new NotImplementedException();
+        }
+    } */
     public static class GarFileMapper
     {
 

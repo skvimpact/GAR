@@ -9,7 +9,6 @@ namespace GarRelevanceObserver
 	[DisallowConcurrentExecution]
 	public class Observer : IJob
 	{
-
 		private readonly ILogger<Observer> _logger;
 		private readonly PullerClient _client;
 
