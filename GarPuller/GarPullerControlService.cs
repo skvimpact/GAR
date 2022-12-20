@@ -75,20 +75,20 @@ namespace GarPuller
                     if (downloaded.Item2 != Guid.Empty) {
                         try {
                             await fileService.UpdateWhenDownloaded(downloaded.Item2, downloaded.Item1);
-                            await _processQueue.Enqueue(downloaded.Item2);
+                            await _processQueue.Enqueue(downloaded);
                         } catch (Exception ex) {
                             _logger.LogError($"UpdateWhenDownloaded failed. {ex.Message}");
                         }
                     }
 
-                    var correlationId = _processQueue.Current(true);
-                    if (correlationId != Guid.Empty) {
+                    var toProcess = _processQueue.Current(true);
+                    if (toProcess.Item2 != Guid.Empty) {
                         try {
-                            await fileService.UpdateWhenProcessRequested(correlationId);
+                            await fileService.UpdateWhenProcessRequested(toProcess.Item2);
                             try {
-                                //processor.HandleZipFile(correlationId); zzz
+                                processor.HandleZipFile(toProcess.Item1);
                                 try {
-                                    await fileService.UpdateWhenProcessed(correlationId);
+                                    await fileService.UpdateWhenProcessed(toProcess.Item2);
                                 } catch (Exception ex) {
                                     _logger.LogError($"UpdateWhenProcessed failed. {ex.Message}");
                                 }
@@ -116,7 +116,7 @@ namespace GarPuller
                     try {
                         if ((fileToProcess = await fileService.ResetHangedProcessState()) is not null) {
                             _logger.LogInformation($"Yeah! HangedProcessState's realy happened");
-                            await _processQueue.Enqueue(fileToProcess.CorrelationId);
+                            await _processQueue.Enqueue((fileToProcess.LocalPath, fileToProcess.CorrelationId));
                         }
                     } catch (Exception ex) {                        
                         _logger.LogError($"ResetHangedProcessState failed. {ex.Message}");

@@ -6,18 +6,19 @@ using FlowControl;
 
 namespace GarPuller.Queue
 {
-    public class GarPullerProcessQueue : Queue<Guid>
+    public class GarPullerProcessQueue : Queue<(string, Guid)>
     {
-        public new Task Enqueue(Guid correlationId)
+        public new Task Enqueue((string, Guid) file)
         {
-            return Task.Run(() => base.Enqueue(correlationId));
-        }        
-        public Guid Current(bool remove = false)
+            return Task.Run(() => base.Enqueue(file));
+        }
+
+        public (string, Guid) Current(bool remove = false)
         {
             if(base.Count > 0)
                 return remove ? base.Dequeue() : base.Peek();
             else
-                return Guid.Empty;
-        }          
+                return (string.Empty, Guid.Empty);
+        }     
     }
 }
