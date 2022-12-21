@@ -59,6 +59,9 @@ public class DownloadServiceTest
 
         var ds = new DownloadService(logger, deltaContext, garContext);
         //ds.HandleZipFile("/Users/skvimpact/src/AR/GAR/2022.01.11_gar_delta_xml.zip");
+        ds.HandleZipFile("/Users/skvimpact/data/GAR/2022.12.20_gar_delta_xml.zip");
+
+
         //ds.HandleZipFile("/Users/skvimpact/src/AR/GAR/18-full-gar.zip");
         //ds.HandleFile("AS_OBJECT_LEVELS_20221020_98f59579-1b85-4644-adef-0947ca540857.XML");
 //        var g = ds.Count("OBJECT_LEVELS");

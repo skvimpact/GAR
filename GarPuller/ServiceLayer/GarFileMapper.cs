@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 using FlowControl;
@@ -7,13 +8,6 @@ using GarPublicClient;
 
 namespace GarPuller.ServiceLayer
 {
-/*     public class MyKey : IEquatable<MyKey>
-    {
-        public bool Equals(MyKey? other)
-        {
-            throw new NotImplementedException();
-        }
-    } */
     public static class GarFileMapper
     {
 
@@ -31,9 +25,12 @@ namespace GarPuller.ServiceLayer
         }
         public static DateTime ParseToDate(string date) 
         {
+            /*
             DateTime dateResult;
             DateTime.TryParse(date, out dateResult);
             return dateResult;
+            */
+            return DateTime.ParseExact(date, "dd.MM.yyyy", CultureInfo.InvariantCulture);
         }
     }
 }
