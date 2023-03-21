@@ -4,19 +4,32 @@ using GarServices;
 using Newtonsoft.Json;
 namespace GarPublicClient
 {
+	public class PublicClientConfiguration
+	{
+		public string Url { get; set; } = "https://fias.nalog.ru/WebServices/Public/";
+		public string? CertificareName { get; set; }
+		//public bool UseAttributes { get; set; } = false;
+		//public bool UseCertificate { get; set; } = false;
+	}
     public class PublicClient
     {
-        private readonly string url;
-        public PublicClient(string url)
+		private readonly PublicClientConfiguration _configuration = new PublicClientConfiguration();
+		private readonly CertifiedHttpClient _httpClient;
+
+        public PublicClient(PublicClientConfiguration? configuration = null)
         {
-            this.url = url;
-        }
+			if (configuration != null)
+            	_configuration = configuration;
+			_httpClient = new CertifiedHttpClient(_configuration.CertificareName)
+			{
+				 BaseAddress = new Uri(_configuration.Url) 
+			};
+        }	
         public async Task<DownloadFileInfo?> GetLastDownloadFileInfo()
-        {			
-            using var client = new HttpClient(){ BaseAddress = new Uri(url) };
+        {	
 			var request = new
-				HttpRequestMessage(HttpMethod.Get, new Uri("WebServices/Public/GetLastDownloadFileInfo", UriKind.Relative));
-			var response = await client.SendAsync(request);
+				HttpRequestMessage(HttpMethod.Get, new Uri("getLastDownloadFileInfo", UriKind.Relative));
+			var response = await _httpClient.SendAsync(request);
 			response.EnsureSuccessStatusCode();
 			var jsonDecoded = JsonConvert.DeserializeObject<DownloadFileInfo>(
 				await response.Content.ReadAsStringAsync());
@@ -25,10 +38,9 @@ namespace GarPublicClient
 
 		public async Task<IEnumerable<DownloadFileInfo>?> GetAllDownloadFileInfo()
 		{
-            using var client = new HttpClient(){ BaseAddress = new Uri(url) };
 			var request = new
-				HttpRequestMessage(HttpMethod.Get, new Uri("WebServices/Public/GetAllDownloadFileInfo", UriKind.Relative));
-			var response = await client.SendAsync(request);
+				HttpRequestMessage(HttpMethod.Get, new Uri("getAllDownloadFileInfo", UriKind.Relative));
+			var response = await _httpClient.SendAsync(request);
 			response.EnsureSuccessStatusCode();
 			var jsonDecoded = JsonConvert.DeserializeObject<ICollection<DownloadFileInfo>>(
 				await response.Content.ReadAsStringAsync());							
@@ -37,14 +49,16 @@ namespace GarPublicClient
 
 		public async Task<bool> DownloadFiasFile(string downloadFileURL, Guid correlationId)
 		{
-			var jsonString = JsonConvert.SerializeObject(new {DownloadFileURL = downloadFileURL});			
-			var httpContent = new StringContent(jsonString, Encoding.UTF8, "application/json");            
-			using var httpClient = new HttpClient();					
-			httpClient.BaseAddress = new Uri(url);
-			httpClient.DefaultRequestHeaders.Accept.Clear();
-			httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-			httpClient.DefaultRequestHeaders.Add("X-correlationID", correlationId.ToString());
-			HttpResponseMessage response = await httpClient.PostAsync("WebServices/Public/DownloadFiasFile", httpContent);
+			var jsonString = JsonConvert.SerializeObject(new {DownloadFileURL = downloadFileURL});		
+			var request = new
+				HttpRequestMessage(HttpMethod.Post, new Uri("downloadFiasFile", UriKind.Relative));	
+				// request.Headers.Accept.Clear();
+			request.Headers.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
+			request.Headers
+				.Add("X-correlationID", correlationId.ToString().Replace("-", String.Empty));
+			request.Content = new StringContent(jsonString, Encoding.UTF8);
+			request.Content.Headers.ContentType = new MediaTypeHeaderValue("application/json");		
+			var response = await _httpClient.SendAsync(request);
 			response.EnsureSuccessStatusCode();
 			return true;	
         }   

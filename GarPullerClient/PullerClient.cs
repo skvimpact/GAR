@@ -4,6 +4,7 @@ using System.Net.Http.Headers;
 using System.Text;
 using System.Threading.Tasks;
 using GarServices;
+using FlowControl;
 using Newtonsoft.Json;
 
 namespace GarPullerClient;
@@ -46,24 +47,7 @@ public class PullerClient
 				return (ServiceState)Int32.Parse(await response.Content.ReadAsStringAsync());
 				//return (ServiceState)BitConverter.ToInt32(await response.Content.ReadAsByteArrayAsync(), 0);
 
-        }		
-/* 		public async Task<ServiceState> ProcessFile()
-		{
-			try
-			{
-				using var httpClient = new HttpClient();
-				httpClient.BaseAddress = new Uri(url);
-				httpClient.DefaultRequestHeaders.Accept.Clear();
-				httpClient.DefaultRequestHeaders.Accept.Add(new MediaTypeWithQualityHeaderValue("application/json"));
-				HttpResponseMessage response = await httpClient.GetAsync($"GarFile/Process");	
-				response.EnsureSuccessStatusCode();		
-				return (ServiceState)BitConverter.ToInt32(await response.Content.ReadAsByteArrayAsync(), 0);
-			}
-			catch(Exception ex)
-			{
-				return ServiceState.Failed;
-			}
-        }	 */		 
+        }			 
 		public async Task<bool> PutDownloadedFile(string filePath, Guid correlationId)
 		{			
 			using var httpClient = new HttpClient();
@@ -77,4 +61,15 @@ public class PullerClient
 			response.EnsureSuccessStatusCode();	
 			return true;
         }
+		public async Task<IEnumerable<GarFile>?> GarFilesList()
+		{
+            using var client = new HttpClient(){ BaseAddress = new Uri(url) };
+			var request = new
+				HttpRequestMessage(HttpMethod.Get, new Uri("GarFile/List", UriKind.Relative));
+			var response = await client.SendAsync(request);
+			response.EnsureSuccessStatusCode();
+			var jsonDecoded = JsonConvert.DeserializeObject<ICollection<GarFile>>(
+				await response.Content.ReadAsStringAsync());							
+            return jsonDecoded;
+        }		
 }        

@@ -34,7 +34,7 @@ namespace FlowControl
             var file = Get(correlationId);
             if (file == null)
                 throw new ArgumentException(
-                    "file not found");
+                    $"file with correlationId = {correlationId} not found ({mode})");
             switch(mode) {
                 case UpdateMode.SetDownloadRequestedAt:     file.DownloadRequestedAt = DateTime.Now; break;
                 case UpdateMode.ResetDownloadRequestedAt:   file.DownloadRequestedAt = null; break;

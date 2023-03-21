@@ -5,14 +5,22 @@ namespace GarPublicClient.Tests;
 public class PublicClientTest
 {
     [Fact]
+    public void CheckCertifiedHttpClient()
+    {
+        var v = new CertifiedHttpClient();
+
+    }
+    [Fact]
     public void GetLastDownloadFileInfoTest()
     {
         DownloadFileInfo? r1 = null;
 
-        var client = new PublicClient("http://fias.nalog.ru");
+        var client = new PublicClient(new PublicClientConfiguration(){
+            Url = "http://localhost:5039/WebServices/Public/"
+        } );
         try
         {
-            r1 = client.GetLastDownloadFileInfo().Result;
+            r1 = client?.GetLastDownloadFileInfo().Result;
             Console.WriteLine("GetLastDownloadFileInfoTest >> " + r1?.ToString());
         }
         catch(Exception ex)
@@ -25,7 +33,9 @@ public class PublicClientTest
     {
         IEnumerable<DownloadFileInfo>? r1 = null;
 
-        var client = new PublicClient("http://fias.nalog.ru");
+        var client = new PublicClient(new PublicClientConfiguration(){
+            Url = "http://localhost:5039/WebServices/Public/"
+        } );
         try
         {
             r1 = client.GetAllDownloadFileInfo().Result;
@@ -36,5 +46,38 @@ public class PublicClientTest
         {
             Console.WriteLine(ex.Message);
         }
+    }  
+    [Fact]
+    public void DownloadTest()
+    {
+        bool r1 = false;
+
+        var client = new PublicClient(new PublicClientConfiguration(){
+            Url = "http://localhost:5039/WebServices/Public/"
+        } );
+        try
+        {
+            r1 = client.DownloadFiasFile("https://fias-file.nalog.ru/downloads/2023.02.17/gar_delta_xml.zip", Guid.NewGuid()).Result;
+            Console.WriteLine($"DownloadFiasFile >> {r1}");
+        }
+        catch(Exception ex)
+        {
+            Console.WriteLine(ex.Message);
+        }
+    }
+
+    [Fact]
+    public void GuidTest()
+    {
+        var gu = Guid.NewGuid();
+        Guid gy;
+        var yyy = Guid.NewGuid().ToString().Replace("-", String.Empty);
+        if (Guid.TryParse(yyy, out var newGuid))
+        {
+            
+            Console.WriteLine($"{newGuid}");
+        }
+        
+        Console.WriteLine($"{gu}");
     }    
 }

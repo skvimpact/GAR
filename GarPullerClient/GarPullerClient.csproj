@@ -12,6 +12,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GarServices\GarServices.csproj" />
+    <ProjectReference Include="..\FlowControl\FlowControl.csproj" />
   </ItemGroup>
 
 </Project>

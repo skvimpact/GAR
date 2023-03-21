@@ -19,6 +19,7 @@ namespace GarProxy
         private readonly DownloadServiceQueue _queue;
         private readonly TimeSpan _refreshInterval = TimeSpan.FromSeconds(5);// FromMinutes(5);
         private readonly ILogger<DownloadService> _logger;    
+        private readonly HttpClient _httpClient;
             public DownloadService(
             DownloadServiceQueue queue,
             IServiceProvider provider,
@@ -29,6 +30,7 @@ namespace GarProxy
             _provider = provider;
             _configuration = configuration;
             _logger = logger;
+            _httpClient = new HttpClient();
         }
         protected override async Task ExecuteAsync(CancellationToken stoppingToken)
         {
@@ -42,8 +44,8 @@ namespace GarProxy
                     
                     try {
                         _logger.LogInformation($"Try to download {file.Item1}");
-                        Retry.DoWithRetry(
-                            () => DownloadFile(new Uri($"{file.Item1}"), fileName),
+                        var r = await Retry.DoWithRetryAsync<bool>(
+                            async () => await DownloadFile(new Uri($"{file.Item1}", UriKind.Absolute), fileName),
                             TimeSpan.FromSeconds(10),
                             (attempt) => _logger.LogInformation($"Attempt to Download. Left {attempt} attempt(s)"));
                         try {
@@ -64,33 +66,35 @@ namespace GarProxy
                 await Task.Delay(_refreshInterval, stoppingToken);
             }
         } 
-		public void DownloadFile(Uri url, string outputFilePath)
+		public async Task<bool> DownloadFile(Uri url, string outputFilePath)
 		{
 			const int BUFFER_SIZE = 16 * 1024;
+			var request = new
+				HttpRequestMessage(HttpMethod.Get, url);
+			var response = await _httpClient.SendAsync(request);
+			response.EnsureSuccessStatusCode();	
+
 			using (var outputFileStream = File.Create(outputFilePath, BUFFER_SIZE))
 			{
-				var req = WebRequest.Create(url);
-				using (var response = req.GetResponse())
+				using (var responseStream = response.Content.ReadAsStream())
 				{
-					using (var responseStream = response.GetResponseStream())
+					var buffer = new byte[BUFFER_SIZE];
+					int bytesRead,totalBytesRead = 0;
+                    int i = 0;
+					do
 					{
-						var buffer = new byte[BUFFER_SIZE];
-						int bytesRead,totalBytesRead = 0;
-                        int i = 0;
-						do
-						{
-                            i++;
-							bytesRead = responseStream.Read(buffer, 0, BUFFER_SIZE);
-                            totalBytesRead += bytesRead;
+                        i++;
+						bytesRead = responseStream.Read(buffer, 0, BUFFER_SIZE);
+                        totalBytesRead += bytesRead;
 						
-						    outputFileStream.Write(buffer, 0, bytesRead);
-						    if ((i % 100) == 0)
-                                _logger.LogInformation(String.Format("Downloaded {0:n0} bytes", totalBytesRead));
-						} while (bytesRead > 0);
-                        _logger.LogInformation($"{url} is downloaded");
-					}
+					    outputFileStream.Write(buffer, 0, bytesRead);
+					    if ((i % 100) == 0)
+                            _logger.LogInformation(String.Format("Downloaded {0:n0} bytes", totalBytesRead));
+					} while (bytesRead > 0);
+                    _logger.LogInformation($"{url} is downloaded");
 				}
 			}
+            return true;
 		}   
         static string ExtractDate(string url) =>
             new Regex(@"\d{4}\.\d{1,2}.\d{1,2}")

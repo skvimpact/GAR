@@ -35,6 +35,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarServices", "GarServices\
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarProxy.Tests", "GarProxy.Tests\GarProxy.Tests.csproj", "{728486DE-CB4E-4F49-BA4E-983E98D4A79B}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "GarMonitor", "GarMonitor\GarMonitor.csproj", "{EEEE6FC9-F3A4-4FB5-9BB9-AD411D41E5D5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -108,5 +110,9 @@ Global
 		{728486DE-CB4E-4F49-BA4E-983E98D4A79B}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{728486DE-CB4E-4F49-BA4E-983E98D4A79B}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{728486DE-CB4E-4F49-BA4E-983E98D4A79B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EEEE6FC9-F3A4-4FB5-9BB9-AD411D41E5D5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EEEE6FC9-F3A4-4FB5-9BB9-AD411D41E5D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EEEE6FC9-F3A4-4FB5-9BB9-AD411D41E5D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EEEE6FC9-F3A4-4FB5-9BB9-AD411D41E5D5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

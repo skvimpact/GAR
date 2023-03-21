@@ -21,14 +21,14 @@ namespace GarProxy.Controllers
             _logger.LogInformation("call GetAllDownloadFileInfo");
             return Ok(await _publicClient.GetAllDownloadFileInfo());
         }
-
+// curl http://localhost:5039/WebServices/Public/GetLastDownloadFileInfo
         [HttpGet("GetLastDownloadFileInfo")]
         public async Task<IActionResult> GetLastDownloadFileInfo()
         {
             _logger.LogInformation("call GetLastDownloadFileInfo");
             return Ok(await _publicClient.GetLastDownloadFileInfo());
         }
-
+// curl -H "Content-Type: application/json" -X POST http://localhost:5039/WebServices/Public/DownloadFiasFile -d '{"DownloadFileURL":"https://fias-file.nalog.ru/downloads/2023.02.14/gar_delta_xml.zip"}'
         [HttpPost("DownloadFiasFile")]
         public async Task<IActionResult> DownloadFile(
             [FromHeader(Name = "X-correlationID")] Guid correlationId, 

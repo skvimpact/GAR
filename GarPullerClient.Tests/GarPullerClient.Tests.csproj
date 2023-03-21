@@ -23,6 +23,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GarPullerClient\GarPullerClient.csproj" />
+    <ProjectReference Include="..\FlowControl\FlowControl.csproj" />
   </ItemGroup>
 
 </Project>

@@ -1,0 +1,15 @@
+@model String
+@{
+    ViewData["Title"] = "GoIsPressed";
+}
+
+<div>
+
+    <h2>
+        @if (@Model != "Started") { 
+            @:Sorry. "@Model"
+        } else {
+            @:O'key buddy. Result is "@Model"
+        }
+    </h2>
+</div>

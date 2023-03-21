@@ -1,0 +1,49 @@
+﻿@model  GarFileListViewModel
+
+@* @{
+    Layout = null;
+} *@
+@{
+    ViewData["Title"] = "GarFile List";
+}
+
+<!DOCTYPE html>
+
+<html>
+<head>
+    <meta name="viewport" content="width=device-width" />
+    <title>Responses</title>
+    <link rel="stylesheet" href="/lib/bootstrap/dist/css/bootstrap.css" />
+</head>
+<body>
+    <div class="text-center p-2">
+        <h2>FlowControl table</h2>
+        <table class="table table-bordered table-striped table-sm">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Download Requested At</th>
+                    <th>Downloaded At</th>
+                    <th>Process Requested At</th>
+                    <th>Processed At</th>
+                    <th>LocalPath</th>
+                    <th>DeltaUrl</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var f in Model.GarFiles) {
+                    <tr>
+                        <td>@f.Date.ToString("dd.MM.yyyy")</td>
+                        <td>@(f.DownloadRequestedAt?.ToString("dd.MM.yyyy H:mm") ?? string.Empty)</td>
+                        <td>@(f.DownloadedAt?.ToString("dd.MM.yyyy H:mm") ?? string.Empty)</td>
+                        <td>@(f.ProcessRequestedAt?.ToString("dd.MM.yyyy H:mm") ?? string.Empty)</td>
+                        <td>@(f.ProcessedAt?.ToString("dd.MM.yyyy H:mm") ?? string.Empty)</td>
+                        <td>@f.LocalPath</td>
+                        <td>@f.DeltaUrl</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</body>
+</html>

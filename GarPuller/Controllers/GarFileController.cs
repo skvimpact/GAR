@@ -9,7 +9,8 @@ using GarPuller.ServiceLayer;
 using GarPuller.Queue;
 using GarServices;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.EventLog;
+using System.Diagnostics;
 
 namespace GarPuller.Controllers
 {
@@ -26,6 +27,7 @@ namespace GarPuller.Controllers
             _service = service;
         }    
 
+// curl -X GET 'http://localhost:5125/GarFile/List'
         [HttpGet("List")]
         public IEnumerable<GarFile> List()
         {
@@ -51,13 +53,13 @@ namespace GarPuller.Controllers
             return await _service.ProcessFile();
         } */
 
+// curl -X GET 'http://localhost:5125/GarFile/Go'
         [HttpGet("Go")]
-        public async Task<ServiceState> Go([FromServices] GarPullerGoQueue queue)
+        public async Task<IActionResult> Go([FromServices] GarPullerGoQueue queue)
         {
-            //service.
-            await queue.Start();//service.
-            return ServiceState.Started;
-            // return await _service.ProcessFile();
+            _logger.LogInformation("attempt to Go");
+            await queue.Start(); // zzz
+            return Ok("GarPuller.GarFile.Get.Go");
         }
         [HttpGet("Clear")]
         public async Task<bool> ClearControlTable()
@@ -65,17 +67,27 @@ namespace GarPuller.Controllers
             return await _service.ClearControlTable();
         }
 
+// curl -H "Content-Type: application/json" -X POST 'http://localhost:5125/GarFile/PutDownloadFIASFile' -H 'X-correlationID: c4580c5495344951856fd0c16785fc90' -d '{"filePath":"\\\\NetShare\\NetFolder\\AA.zip"}'
         [HttpPost("PutDownloadFIASFile")]
-        public async Task<bool> PutDownloadedFile(
+        public async Task<IActionResult> PutDownloadedFile(
             [FromHeader(Name = "X-correlationID")] Guid correlationId, 
             [FromBody]PutDownloadedFileCmd cmd,
             [FromServices] GarPullerDownloadedQueue queue)
         {
 
+
+string message = "This is a test message.";
+using (EventLog eventLog = new EventLog("Application"))
+{
+    eventLog.Source = "Application";
+    eventLog.WriteEntry(message, EventLogEntryType.Information);
+}
+
+
             _logger.LogInformation($"PutDownloadedFile {cmd.filePath} correlationId = {correlationId}"); 
             //await _service.PutDownloadedFile(correlationId, cmd.filePath);  
             await queue.Enqueue((cmd.filePath, correlationId));
-            return true;
+            return Ok($"GarPuller.GarFile.Post.PutDownloadFIASFile. filePath = {cmd.filePath}. correlationId = {correlationId}");
         }      
     }
 }
